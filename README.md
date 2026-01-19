@@ -39,6 +39,8 @@ If the constructor is passed an empty Y.Map then it will initiate it by creating
 
 So be aware of when you are creating or loading a YTree. When loading a YTree, check if the Y.Map has been initiated with CheckForYtree().
 
+Another thing to keep in mind is that "root" nodeId is reserved and always used for the root node of the YTree.
+
 ## Creating a tree
 
 Create an empty Y.Map bounded to a yjs document
