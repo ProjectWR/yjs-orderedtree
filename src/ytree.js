@@ -41,16 +41,19 @@ export class YTree {
   /**
    *
    * @param {Y.Map} yMap
+   * @param {Object} [options]
+   * @param {(before: string | undefined, after: string | undefined) => string} [options.insertBetween]
    * 
    * 
    * Constructor is required to be called with a Y.Map instance that is bound to a Y.Doc. 
    * The YMap is required to be empty or initialized. 
    * If given an empty (uninitialized) YMap then it initializes the YMap for YTree operations by creating a root node. 
    * 
-   * 
    * If you don't want to accidentally create a Ytree then use checkForYTree beforehand to ensure that a YTree has been initialized.
+   * 
+   * To use a custom algorithm for generating index strings for ordering, provide a second parameter which is an object with an `insertBetween` function.
    */
-  constructor(yMap) {
+  constructor(yMap, options = {}) {
 
     /**
      * @type {Y.Map} Node Map
@@ -107,6 +110,11 @@ export class YTree {
      * This should be recomputed every time parent history changes or new nodes are added or deleted.
      */
     this.computedMap = new Map();
+
+    /**
+     * @type {(before: string | undefined, after: string | undefined) => string}
+     */
+    this._insertBetween = options?.insertBetween || insertBetween;
 
     /**
      * @type {Array<function():void>}
@@ -261,7 +269,7 @@ export class YTree {
       throw new Error("[ytree] Node with key: " + nodeKey + " already exists");
     }
 
-    const order_index = insertBetween(this._getHighestOrderIndex(this.getNodeChildrenFromKey(parentKey), parentKey), '');
+    const order_index = this._insertBetween(this._getHighestOrderIndex(this.getNodeChildrenFromKey(parentKey), parentKey), undefined);
 
     this._ydoc.transact(() => {
       const node = new Y.Map();
@@ -321,7 +329,7 @@ export class YTree {
     }
 
 
-    const new_order_index = insertBetween(this._getHighestOrderIndex(this.getNodeChildrenFromKey(parentKey), parentKey), '');
+    const new_order_index = this._insertBetween(this._getHighestOrderIndex(this.getNodeChildrenFromKey(parentKey), parentKey), undefined);
 
     if (
       this.isNodeUnderOtherNode(
@@ -577,7 +585,7 @@ export class YTree {
     const parent = this.computedMap.get(nodeKey).parent;
     const children = this.getNodeChildrenFromKey(parent.id)
 
-    const order_index = insertBetween('', this._getLowestOrderIndex(children, parent.id));
+    const order_index = this._insertBetween('', this._getLowestOrderIndex(children, parent.id));
     const parentHistory = this._ymap.get(nodeKey).get("_parentHistory");
     const parentCounter = parentHistory.get(parent.id).counter;
     parentHistory.set(parent.id, { counter: parentCounter, order: order_index });
@@ -596,7 +604,7 @@ export class YTree {
     const parent = this.computedMap.get(nodeKey).parent;
     const children = this.getNodeChildrenFromKey(parent.id)
 
-    const order_index = insertBetween(this._getHighestOrderIndex(children, parent.id), '');
+    const order_index = this._insertBetween(this._getHighestOrderIndex(children, parent.id), undefined);
     const parentHistory = this._ymap.get(nodeKey).get("_parentHistory");
     const parentCounter = parentHistory.get(parent.id).counter;
     parentHistory.set(parent.id, { counter: parentCounter, order: order_index })
@@ -623,7 +631,7 @@ export class YTree {
     }
 
     const children = this.getNodeChildrenFromKey(parent.id);
-    const order_index = insertBetween(
+    const order_index = this._insertBetween(
       this._ymap.get(target).get("_parentHistory").get(parent.id).order,
       this.getNextOrderIndex(target, children, parent.id)
     );
@@ -655,7 +663,7 @@ export class YTree {
     }
 
     const children = this.getNodeChildrenFromKey(parent.id);
-    const order_index = insertBetween(
+    const order_index = this._insertBetween(
       this.getPreviousOrderIndex(target, children, parent.id),
       this._ymap.get(target).get("_parentHistory").get(parent.id).order
     );
