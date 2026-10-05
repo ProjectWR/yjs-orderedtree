@@ -514,6 +514,22 @@ describe('index.js', () => {
     expect(yTree.sortChildrenByOrder(children, "a")).toStrictEqual(['b', 'c', 'd']);
   })
 
+  test("Ytree uses insertBetween option to generate order strings", () => {
+    const insertBetween =  jest.fn((before = '', after = '100') => ((parseInt(before || '0') + parseInt(after || '0')) / 2).toFixed(0).padStart(3, ' '));
+    const yDoc = new Y.Doc();
+    const yMap = yDoc.getMap("ymap").set("ytree", new Y.Map());
+    const yTree = new YTree(yMap, { insertBetween });
+
+    yTree.createNode("root", "a", "a_value");
+    expect(insertBetween).toHaveBeenLastCalledWith('', undefined);
+
+    yTree.createNode("root", "b", "b_value");
+    expect(insertBetween).toHaveBeenLastCalledWith(' 50', undefined);
+
+    yTree.setNodeBefore("b", "a");
+    expect(insertBetween).toHaveBeenLastCalledWith('',  ' 50');
+  })
+
 
   test('performance test - horizontal', (done) => {
     const yDocOne = new Y.Doc();

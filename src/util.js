@@ -41,13 +41,13 @@ export function edgeWithLargestCounter(node) {
 
 /**
  * 
- * @param {string} before 
- * @param {string} after 
+ * @param {string | undefined} before
+ * @param {string | undefined} after
  * @returns {string}
  * @description https://madebyevan.com/algos/crdt-fractional-indexing/
  * TODO: Look into allowing logarithimic key growth for generating an appending or prepending order index
  */
-export function insertBetween(before, after) {
+export function insertBetween(before = "", after = "") {
 
     const minDigit = "\u0000".charCodeAt(0);
     const maxDigit = "\u00FF".charCodeAt(0);
